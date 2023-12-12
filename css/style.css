@@ -241,6 +241,10 @@ button:hover {
   border: 1px solid red;
 }
 
+.not-valid + .error-border {
+  border: 1px solid red;
+}
+
 .not-valid legend {
   color: red;
 }
