@@ -1,6 +1,4 @@
 const form = document.querySelector('form');
-//form is not valid when page loads
-let isValid = false;
 
 const nameInput = document.querySelector('#name');
 const nameHint = document.querySelector('#name-hint');
