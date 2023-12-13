@@ -51,6 +51,7 @@ function validateText(element) {
             hideHint(hint);
         }
     }
+    return isValidText;
 }
 
 /* validate at least one activity is selected */
@@ -67,6 +68,7 @@ function validateActivitySelected() {
         addValid(legend);
         hideHint(hint);
     }
+    return isActivitySelected;
 }
 
 /* validate expiration fields are filled in */
@@ -82,6 +84,7 @@ function validateExpDate(element) {
         addValid(label);
         hideHint(hint);
     }
+    return isValidPaymentInfo;
 }
 
 /*
@@ -300,26 +303,38 @@ for (const checkbox of checkboxInputs) {
 
 /* validate all applicable fields when user clicks submit */
 form.addEventListener('submit', (e) => {
-    e.preventDefault();
+    let isValidText = false;
+    let isActivitySelected = false;
+    let isValidPaymentInfo = false;
+
     for (const input of textInputs) {
-        if (input.id !== 'other-job-role') {
-            validateText(input);
+        if (ccDiv.hidden) {
+            isValidText = true;
+        } else if (input.id !== 'other-job-role') {
+            isValidText = validateText(input);
         }
     }
     for (const input of ccInputs) {
-        if (input.tagName === 'SELECT') {
-            validateExpDate(input);
+        if (ccDiv.hidden) {
+            isValidPaymentInfo = true;
+        } else if (input.tagName === 'SELECT') {
+           isValidPaymentInfo = validateExpDate(input);
         }
     }
     for (i = 0; i < checkboxInputs.length; i++) {
-        validateActivitySelected();
+        isActivitySelected = validateActivitySelected();
+    }
+
+    if (!isValidText || !isValidPaymentInfo || !isActivitySelected) {
+        e.preventDefault();
+        console.log(isActivitySelected);
+        console.log(isValidText);
+        console.log(isValidPaymentInfo);
     }
 });
 
 //TODO:: BEFORE SUBMISSION
 /*
-- make sure submit event refreshes when all fields valid
-- detail the real time validation behavior and conditional error messages in the README.md
 - swap code from script.js to this file / this file to script.js
 - remove the second script tag in html
 - uncomment original script tag in html
