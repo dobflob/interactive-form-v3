@@ -27,24 +27,29 @@ function validateText(element) {
     const label = element.parentNode;
     const hint = element.nextElementSibling;
 
-    if (element.type === 'email') {
-        isValidText = /^[a-z0-9]+([.+_][a-z0-9]+)*@[a-z]+\.[a-z][a-z]+$/i.test(text);
-    } else if (element.id === 'name') {
-        isValidText = /^([a-z]+)( [a-z]+)?( [a-z]+)?$/i.test(text);
-    } else if (element.id === 'cc-num') {
-        isValidText = /^[0-9]{13,16}$/.test(text);
-    } else if (element.id === 'zip') {
-        isValidText = /^[0-9]{5}$/.test(text);
-    } else if (element.id === 'cvv') {
-        isValidText = /^[0-9]{3}$/.test(text);
-    }
-    
-    if (!isValidText) {
+    if (!element.value) {
         addNotValid(label);
-        showHint(hint);
+        showHint(hint, 'empty');
     } else {
-        addValid(label);
-        hideHint(hint);
+        if (element.type === 'email') {
+            isValidText = /^[a-z0-9]+([.+_][a-z0-9]+)*@[a-z]+\.[a-z][a-z]+$/i.test(text);
+        } else if (element.id === 'name') {
+            isValidText = /^([a-z]+)( [a-z]+)?( [a-z]+)?$/i.test(text);
+        } else if (element.id === 'cc-num') {
+            isValidText = /^[0-9]{13,16}$/.test(text);
+        } else if (element.id === 'zip') {
+            isValidText = /^[0-9]{5}$/.test(text);
+        } else if (element.id === 'cvv') {
+            isValidText = /^[0-9]{3}$/.test(text);
+        }
+        
+        if (!isValidText) {
+            addNotValid(label);
+            showHint(hint, 'format');
+        } else {
+            addValid(label);
+            hideHint(hint);
+        }
     }
 }
 
@@ -201,18 +206,44 @@ function addNotValid(element) {
     element.classList.remove('valid');
 }
 
-function showHint(element) {
-    element.style.display = 'block';
-    if (element.id === 'year-hint' || element.id === 'month-hint') {
-        const ccBox = document.querySelector('.credit-card-box');
-        ccBox.style.marginTop = '27px';
+function showHint(element, errorType) {
+    if (element.parentNode.tagName !== 'LEGEND') {
+        getHintText(element, errorType);
     }
+    element.style.display = 'block';
 }
 /* remove both valid and not-valid classes */
 function removeValidClasses(element) {
     element.classList.remove('valid', 'not-valid');
 }
 
+/* display correct hint text depending on field and validation error*/
+function getHintText(element, errorType) {
+    const hintFor = element.previousElementSibling.id.toString();
+    let fieldDisplayName = hintFor;
+
+    if (element.id === 'year-hint' || element.id === 'month-hint') {
+        const ccBox = document.querySelector('.credit-card-box');
+        ccBox.style.marginTop = '27px';
+    } else {
+        if (hintFor === 'cvv') {
+            fieldDisplayName = 'CVV';
+            
+        } else if (hintFor === 'cc-num') {
+            fieldDisplayName = 'Card Number';
+            
+        } else {
+            const firstLetter = hintFor[0].toUpperCase();
+            fieldDisplayName = firstLetter + hintFor.slice(1);
+        }
+    }
+    
+    if (errorType === 'empty') {
+        element.textContent = `${fieldDisplayName} is required`;
+    } else if (errorType === 'format') {
+        element.textContent = `${fieldDisplayName} must be formatted correctly`;
+    }
+}
 /*
 EVENT LISTENERS!
 */
@@ -233,7 +264,7 @@ form.addEventListener('keyup', (e) => {
         targetElement.type !== 'checkbox' && 
         targetElement.id !== 'other-job-role') {
         //validate field when this event fires IF field is !empty and not hidden
-        if (!targetElement.value || targetElement.hidden) {
+        if (targetElement.hidden) {
             removeValidClasses(targetElement);
         } else {
             validateText(targetElement);
@@ -288,8 +319,6 @@ form.addEventListener('submit', (e) => {
 //TODO:: BEFORE SUBMISSION
 /*
 - make sure submit event refreshes when all fields valid
-- figure out how to add hint text to expiration fields since I made it harder on myself and made them required...
-- provide conditional hint text for text inputs to indicate if the field is invalid because it's blank or because the formatting is off
 - detail the real time validation behavior and conditional error messages in the README.md
 - swap code from script.js to this file / this file to script.js
 - remove the second script tag in html
