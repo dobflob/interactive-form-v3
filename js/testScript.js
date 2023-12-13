@@ -1,5 +1,5 @@
 const form = document.querySelector('form');
-const firstField = form.querySelector('input'); //selects first input element in form
+const firstField = form.querySelector('input');
 
 //specific elements that have conditionals based on other inputs/form states
 const otherJobRoleInput = document.querySelector('#other-job-role');
@@ -8,60 +8,78 @@ const defaultPayment = document.querySelector('option[value="credit-card"]');
 const ccDiv = document.querySelector('#credit-card');
 const paypalInfo = document.querySelector('#paypal');
 const bitcoinInfo = document.querySelector('#bitcoin');
+let totalCostInt = 0;
 
 //node lists of elements to loop through
 const selectInputs = document.querySelectorAll('select');
 const selectOptions = document.querySelectorAll('option');
 const textInputs = document.querySelectorAll('input[type="text"], input[type="email"]');
-const checkboxInputs = document.querySelectorAll('label > input[type="checkbox"]');
+const checkboxInputs = document.querySelectorAll('input[type="checkbox"]');
 const ccInputs = ccDiv.querySelectorAll('input, select');
 
-//validation helper functions!
+/*
+VALIDATION FUNCTIONS!
+*/
+/* validate text fields have correct format */
 function validateText(element) {
     let isValidText = false;
     const text = element.value;
-    const elementLabel = element.parentNode;
-    const elementHint = element.nextElementSibling;
+    const label = element.parentNode;
+    const hint = element.nextElementSibling;
 
     if (element.type === 'email') {
         isValidText = /^[a-z0-9]+([.+_][a-z0-9]+)*@[a-z]+\.[a-z][a-z]+$/i.test(text);
-        console.log(`Email valid: ${isValidText}`); //Remove before submission
     } else if (element.id === 'name') {
         isValidText = /^([a-z]+)( [a-z]+)?( [a-z]+)?$/i.test(text);
-        console.log(`Name valid: ${isValidText}`); //Remove before submission
     } else if (element.id === 'cc-num') {
         isValidText = /^[0-9]{13,16}$/.test(text);
-        console.log(`CC Num valid: ${isValidText}`); //Remove before submission
     } else if (element.id === 'zip') {
         isValidText = /^[0-9]{5}$/.test(text);
-        console.log(`Zip valid: ${isValidText}`); //Remove before submission
     } else if (element.id === 'cvv') {
         isValidText = /^[0-9]{3}$/.test(text);
-        console.log(`CVV valid: ${isValidText}`); //Remove before submission
     }
     
-    //TODO:? turn the validator into a reusable funciton....?
     if (!isValidText) {
-        addNotValid(elementLabel);
-        showHint(elementHint);
+        addNotValid(label);
+        showHint(hint);
     } else {
-        addValid(elementLabel);
-        hideHint(elementHint);
+        addValid(label);
+        hideHint(hint);
     }
 }
 
+/* validate at least one activity is selected */
+function validateActivitySelected() {
+    const isActivitySelected = totalCostInt > 0;
+    const activityFieldset = document.querySelector('#activities');
+    const legend = activityFieldset.firstElementChild;
+    const hint = activityFieldset.lastElementChild;
+
+    if (!isActivitySelected) {
+        addNotValid(legend);
+        showHint(hint);
+    } else {
+        addValid(legend);
+        hideHint(hint);
+    }
+}
+
+/* validate expiration fields are filled in */
 function validateExpDate(element) {
     let isValidPaymentInfo = !element.firstElementChild.selected;
-    const elementLabel = element.previousElementSibling;
+    const label = element.previousElementSibling;
 
     if (!isValidPaymentInfo) {
-        addNotValid(elementLabel);
+        addNotValid(label);
     } else {
-        addValid(elementLabel);
+        addValid(label);
     }
 }
 
-//handle conditional inputs
+/*
+CONDITIONAL FUNCTIONS!
+*/
+/* handle conditional field display */
 function handleConditionals(element) {
     if (element.id === 'title') {
         if (element.value === 'other') {
@@ -88,18 +106,18 @@ function handleConditionals(element) {
         colorSelectInput.disabled = false;
 
     } else if (element.id === 'payment') {
-        const paymentMethod = element.value;
+        const selectedMethod = element.value;
 
-        if (paymentMethod === 'credit-card') {
+        if (selectedMethod === 'credit-card') {
             paypalInfo.hidden = true;
             bitcoinInfo.hidden = true;
             ccDiv.hidden = false;
-        } else if (paymentMethod === 'paypal') {
+        } else if (selectedMethod === 'paypal') {
             paypalInfo.hidden = false;
             bitcoinInfo.hidden = true;
             ccDiv.hidden = true;
             resetPaymentInfo();
-        } else if (paymentMethod === 'bitcoin') {
+        } else if (selectedMethod === 'bitcoin') {
             paypalInfo.hidden = true;
             bitcoinInfo.hidden = false;
             ccDiv.hidden = true;
@@ -108,6 +126,7 @@ function handleConditionals(element) {
     }
 }
 
+/* reset cc inputs when different payment method selected */
 function resetPaymentInfo() {
     for (const input of ccInputs) {
         if (input.tagName === 'INPUT') {
@@ -124,30 +143,62 @@ function resetPaymentInfo() {
     }
 }
 
-//handle validation classes
-function addValid(label) {
-    label.classList.add('valid');
-    label.classList.remove('not-valid');
+/* update total cost when an activity is checked or unchecked */
+function updateCost(element) {
+    const activityCost = parseInt(element.dataset.cost);
+    const costPara = document.querySelector('#activities-cost');
+    if (element.checked) {
+        totalCostInt += activityCost;
+    } else {
+        totalCostInt -= activityCost;
+    }
+    costPara.textContent = `Total: $${totalCostInt}`;
 }
 
-function hideHint(hint) {
-    hint.removeAttribute('style');
+/* disable any conflicting activities when activity selected */
+function disableConflicts(element) {
+    const elementTime = element.dataset.dayAndTime; 
+    for (const checkbox of checkboxInputs) {
+        //only disable/enable checkboxes that weren't the event target
+        if (element !== checkbox) {
+            if (elementTime === checkbox.dataset.dayAndTime && element.checked) {
+                checkbox.disabled = true;
+                checkbox.parentNode.classList.add('disabled');
+            } else if (elementTime === checkbox.dataset.dayAndTime && !element.checked) {
+                checkbox.disabled = false;
+                checkbox.parentNode.classList.remove('disabled');
+            }
+        }
+    }
 }
 
-function addNotValid(label) {
-    label.classList.add('not-valid');
-    label.classList.remove('valid');
+/* add valid class and remove not-valid */
+function addValid(element) {
+    element.classList.add('valid');
+    element.classList.remove('not-valid');
 }
 
-function showHint(hint) {
-    hint.style.display = 'block';
+function hideHint(element) {
+    element.removeAttribute('style');
+}
+/* add not-valid class and remove valid */
+function addNotValid(element) {
+    element.classList.add('not-valid');
+    element.classList.remove('valid');
 }
 
-function removeValidClasses(label) {
-    label.classList.remove('valid', 'not-valid');
+function showHint(element) {
+    element.style.display = 'block';
+}
+/* remove both valid and not-valid classes */
+function removeValidClasses(element) {
+    element.classList.remove('valid', 'not-valid');
 }
 
-//sets the initial state of form fields that are dependent on specific selections
+/*
+EVENT LISTENERS!
+*/
+/* sets the initial form state when content loads */
 document.addEventListener('DOMContentLoaded', () => {
     otherJobRoleInput.hidden = true;
     colorSelectInput.disabled = true;
@@ -157,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
     firstField.focus();
 });
 
-//event listener for text inputs or any field tabbed to
+/* when a user types in a required text field */
 form.addEventListener('keyup', (e) => {
     const targetElement = e.target;
     if (targetElement.tagName === 'INPUT' && 
@@ -172,7 +223,7 @@ form.addEventListener('keyup', (e) => {
     }    
 });
 
-//event listener for select inputs and checkboxes
+/* do something when select inputs and checkboxes have a value change*/
 form.addEventListener('change', (e) => {
     const targetElement = e.target;
     if (targetElement.tagName === 'SELECT') {
@@ -181,15 +232,16 @@ form.addEventListener('change', (e) => {
             validateExpDate(targetElement);
         }
     } else if (targetElement.type === 'checkbox') {
-        //validateActivitySelection
-        //disableConflicts
+        updateCost(targetElement);
+        validateActivitySelected();
+        disableConflicts(targetElement);
     }
 });
 
 //event listener for all form inputs when they lose focus - doesn't bubble, will need to loop through inputs and add blur event
 
 
-//event listener for submit event that validates all applicable form fields
+/* validate all applicable fields when user clicks submit */
 form.addEventListener('submit', (e) => {
     e.preventDefault();
     for (const input of textInputs) {
@@ -197,12 +249,12 @@ form.addEventListener('submit', (e) => {
             validateText(input);
         }
     }
-
     for (const input of ccInputs) {
         if (input.tagName === 'SELECT') {
             validateExpDate(input);
         }
     }
+    for (i = 0; i < checkboxInputs.length; i++) {
+        validateActivitySelected();
+    }
 });
-
-//what if I added a class 'js-optional' that I applied to any field that's optional. then I just have to validate anything that doesn't have that class instead of specifying the specific id for each optional element.
