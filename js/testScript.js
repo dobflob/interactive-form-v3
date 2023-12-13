@@ -50,11 +50,14 @@ function validateText(element) {
     }
 }
 
-function validatePaymentInfo(element) {
-    let isValidPaymentInfo = false;
+function validateExpDate(element) {
+    let isValidPaymentInfo = !element.firstElementChild.selected;
+    const elementLabel = element.previousElementSibling;
 
-    if (element.tagName === 'SELECT') {
-        isValidPaymentInfo = !element.firstElementChild.selected;
+    if (!isValidPaymentInfo) {
+        addNotValid(elementLabel);
+    } else {
+        addValid(elementLabel);
     }
 }
 
@@ -174,11 +177,12 @@ form.addEventListener('change', (e) => {
     const targetElement = e.target;
     if (targetElement.tagName === 'SELECT') {
         handleConditionals(targetElement);
-        //validateSelection
-        console.log(`select`);
+        if (targetElement.id === 'exp-month' || targetElement.id === 'exp-year') {
+            validateExpDate(targetElement);
+        }
     } else if (targetElement.type === 'checkbox') {
-        //validateActivities
-        console.log(`checkbox`);
+        //validateActivitySelection
+        //disableConflicts
     }
 });
 
@@ -195,7 +199,9 @@ form.addEventListener('submit', (e) => {
     }
 
     for (const input of ccInputs) {
-        validatePaymentInfo(input);
+        if (input.tagName === 'SELECT') {
+            validateExpDate(input);
+        }
     }
 });
 
