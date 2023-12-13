@@ -238,8 +238,16 @@ form.addEventListener('change', (e) => {
     }
 });
 
-//event listener for all form inputs when they lose focus - doesn't bubble, will need to loop through inputs and add blur event
+/* add event listener to each checkbox for both focus and blur*/
+for (const checkbox of checkboxInputs) {
+    checkbox.addEventListener('focus', () => {
+        checkbox.parentNode.classList.add('focus');
+    });
 
+    checkbox.addEventListener('blur', () => {
+        checkbox.parentNode.classList.remove('focus');
+    });
+}
 
 /* validate all applicable fields when user clicks submit */
 form.addEventListener('submit', (e) => {
@@ -258,3 +266,14 @@ form.addEventListener('submit', (e) => {
         validateActivitySelected();
     }
 });
+
+//TODO:: BEFORE SUBMISSION
+/*
+- make sure submit event refreshes when all fields valid
+- figure out how to add hint text to expiration fields since I made it harder on myself and made them required...
+- provide conditional hint text for text inputs to indicate if the field is invalid because it's blank or because the formatting is off
+- detail the real time validation behavior and conditional error messages in the README.md
+- swap code from script.js to this file / this file to script.js
+- remove the second script tag in html
+- uncomment original script tag in html
+*/
