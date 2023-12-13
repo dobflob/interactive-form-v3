@@ -68,11 +68,14 @@ function validateActivitySelected() {
 function validateExpDate(element) {
     let isValidPaymentInfo = !element.firstElementChild.selected;
     const label = element.previousElementSibling;
-
+    const hint = element.nextElementSibling;
+    
     if (!isValidPaymentInfo) {
         addNotValid(label);
+        showHint(hint);
     } else {
         addValid(label);
+        hideHint(hint);
     }
 }
 
@@ -180,7 +183,18 @@ function addValid(element) {
 
 function hideHint(element) {
     element.removeAttribute('style');
+    if (element.id === 'year-hint' || element.id === 'month-hint') {
+        const monthLabel = document.querySelector('label[for="exp-month"]');
+        const yearLabel = document.querySelector('label[for="exp-year"]');
+
+        if (!monthLabel.classList.contains('not-valid') && 
+            !yearLabel.classList.contains('not-valid')) {
+            const ccBox = document.querySelector('.credit-card-box');
+            ccBox.removeAttribute('style');
+        }
+    }
 }
+
 /* add not-valid class and remove valid */
 function addNotValid(element) {
     element.classList.add('not-valid');
@@ -189,6 +203,10 @@ function addNotValid(element) {
 
 function showHint(element) {
     element.style.display = 'block';
+    if (element.id === 'year-hint' || element.id === 'month-hint') {
+        const ccBox = document.querySelector('.credit-card-box');
+        ccBox.style.marginTop = '27px';
+    }
 }
 /* remove both valid and not-valid classes */
 function removeValidClasses(element) {
