@@ -28,6 +28,7 @@ Fields with an asterisk are required and will be validated unless hidden.
     - Exp Date, Year, Card Number, Zip, and CVV (if payment method is Credit Card)
 
 > *This does not happen with checkboxes*
+
 > *I'd rather have the field validate on blur, but that is a problem for another day*
 
 ### Fields that must have a specific format are validated:
