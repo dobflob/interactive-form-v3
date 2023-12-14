@@ -1,7 +1,7 @@
 # interactive-form-v3
 Treehouse Tech Degree Project 3: Interactive Form
 
-## About my project...
+## About my project
 This project is to learn and get comfortable with form validation, to include: using RegEx for validation, traversing the DOM, meeting/incorporating accessbitility standards, and conditionals
 
 ## Input Validation:    
@@ -27,8 +27,8 @@ Fields with an asterisk are required and will be validated unless hidden.
     - Activity Field Set (at least one activity must be selected)
     - Exp Date, Year, Card Number, Zip, and CVV (if payment method is Credit Card)
 
-*This does not happen with checkboxes*
-*I'd rather have the field validate on blur, but that is a problem for another day*
+> *This does not happen with checkboxes*
+> *I'd rather have the field validate on blur, but that is a problem for another day*
 
 ### Fields that must have a specific format are validated:
 - If the field is formatted incorrectly:
@@ -81,4 +81,4 @@ Some fields have a different state or are hidden based on previous form selectio
 Vanilla JavaScript (and love)!
 
 ## Getting Started
-Download the project files and open your local copy of index.html in Chrome or visit [Register for Full Stack Conference](https://dobflob.github.io/interactive-form-v3)
+Download the project files and open your local copy of index.html in Chrome or visit my github page [Register for Full Stack Conference](https://dobflob.github.io/interactive-form-v3)
